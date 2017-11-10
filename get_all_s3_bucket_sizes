@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# by James Tulloch of insperitas. Comments and improvements welcome. To james@insperitas.com
+# depends on having aws cli installed 
+# depends on having aws cli setup correctly for your environment to setup permissions
+# depends on user setup in AWS CLI having read bucket rights
+
+# get a list of all buckets
+myBuckets=($(aws s3 ls s3:// --recursive | awk '{print $3}'))
+  for j in "${myBuckets[@]}"; do
+# to show list of buckets, remove the hash from the next line  
+#  echo "Bucket is" "${j}"
+
+
+# get each region
+  myBucketRegion=($(aws s3api get-bucket-location --bucket ${j} | awk '{print $2}'))
+# to show each bucket's region, remove the hash from the next line 
+# echo "Region is " "${myBucketRegion}"
+
+# strips quotation marks
+temp="${myBucketRegion%\"}"
+temp2="${temp#\"}"
+# echo "$temp2"
+
+# sets us-east-1 where s3api command returns a null value
+if [ -z "$myBucketRegion" ]; then
+    myBucketRegion=us-east-1
+ echo "Region is " "${myBucketRegion}"   
+fi
+
+# calculate size of each bucket
+aws s3 ls s3://"${j}" --region us-east-2 --recursive  --summarize | awk END'{print $3}'
+cumulativeSize=($(aws s3 ls s3://"${j}" --region us-east-2 --recursive  --summarize | awk END'{print $3}'))
+totalsize=$((totalsize + cumulativeSize))
+echo $totalsize
+
+  done
+# finally reduce bytes to useable format
+calc2=`echo $totalsize/1000  | bc`
+calc3=`echo $totalsize/1000000  | bc`
+calc4=`echo $totalsize/1000000000  | bc`
+echo "size in kbs "
+echo $calc2
+echo "size in mbs "
+echo $calc3
+echo "size in gbs "
+echo $calc4
+
