@@ -9,7 +9,7 @@
 myBuckets=($(aws s3 ls s3:// --recursive | awk '{print $3}'))
   for j in "${myBuckets[@]}"; do
 # to show list of buckets, remove the hash from the next line  
-#  echo "Bucket is" "${j}"
+# echo "Bucket is" "${j}"
 
 
 # get each region
@@ -20,7 +20,7 @@ myBuckets=($(aws s3 ls s3:// --recursive | awk '{print $3}'))
 # strips quotation marks
 temp="${myBucketRegion%\"}"
 temp2="${temp#\"}"
-# echo "$temp2"
+echo "$temp2"
 
 # sets us-east-1 where s3api command returns a null value
 if [ -z "$myBucketRegion" ]; then
@@ -32,7 +32,11 @@ fi
 aws s3 ls s3://"${j}" --region us-east-2 --recursive  --summarize | awk END'{print $3}'
 cumulativeSize=($(aws s3 ls s3://"${j}" --region us-east-2 --recursive  --summarize | awk END'{print $3}'))
 totalsize=$((totalsize + cumulativeSize))
+echo "total size this bucket:" 
 echo $totalsize
+echo "cumulative Size so far:" 
+echo $cumulativeSize
+echo "----------------------------------------"
 
   done
 # finally reduce bytes to useable format
@@ -45,4 +49,3 @@ echo "size in mbs "
 echo $calc3
 echo "size in gbs "
 echo $calc4
-
